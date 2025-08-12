@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import { Product } from "@/lib/models/product";
+import { Collection } from "@/lib/models/collection";
+import { Order } from "@/lib/models/order";
 import {
   handleApiError,
   successResponse,
@@ -9,6 +11,8 @@ import {
 import { logger } from "@/lib/logger";
 import { cleanupProductImages } from "@/lib/image-cleanup";
 import { requireAuth } from "@/lib/middleware";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   _req: NextRequest,

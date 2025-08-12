@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import { Product } from "@/lib/models/product";
-import { Collection } from "@/lib/models";
-import { handleApiError, successResponse } from "@/lib/api-response";
-import { logger } from "@/lib/logger";
+import { Collection } from "@/lib/models/collection";
+import {
+  handleApiError,
+  successResponse,
+  errorResponse,
+} from "@/lib/api-response";
 import { requireAuth } from "@/lib/middleware";
+import { logger } from "@/lib/logger";
+import { uploadImage, deleteImage } from "@/lib/cloudinary";
+import {
+  extractFilesFromFormData,
+  fileToBuffer,
+  validateImageFile,
+  validateFileSize,
+} from "@/lib/upload";
+
+export const dynamic = "force-dynamic";
 
 // Helper function to get filter options
 async function getFilterOptions() {

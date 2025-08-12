@@ -9,6 +9,8 @@ import {
 } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }

@@ -1,9 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/middleware";
-import { handleApiError, successResponse, errorResponse } from "@/lib/api-response";
+import { NextRequest, NextResponse } from "next/server";
+import {
+  handleApiError,
+  successResponse,
+  errorResponse,
+} from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import { uploadMultipleImages } from "@/lib/cloudinary";
-import { extractFilesFromFormData, fileToBuffer, validateImageFile, validateFileSize } from "@/lib/upload";
+import {
+  extractFilesFromFormData,
+  fileToBuffer,
+  validateImageFile,
+  validateFileSize,
+} from "@/lib/upload";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     // Extract files from FormData
     const files = await extractFilesFromFormData(request);
-    
+
     if (files.length === 0) {
       return errorResponse("No files provided", 400);
     }
@@ -21,32 +32,40 @@ export async function POST(request: NextRequest) {
     // Validate files
     for (const file of files) {
       if (!validateImageFile(file)) {
-        return errorResponse(`Invalid file type: ${file.name}. Only images are allowed.`, 400);
+        return errorResponse(
+          `Invalid file type: ${file.name}. Only images are allowed.`,
+          400
+        );
       }
-      
+
       if (!validateFileSize(file)) {
-        return errorResponse(`File too large: ${file.name}. Maximum size is 5MB.`, 400);
+        return errorResponse(
+          `File too large: ${file.name}. Maximum size is 5MB.`,
+          400
+        );
       }
     }
 
     // Convert files to buffers
-    const fileBuffers = await Promise.all(files.map(file => fileToBuffer(file)));
+    const fileBuffers = await Promise.all(
+      files.map((file) => fileToBuffer(file))
+    );
 
     // Upload to Cloudinary
     const uploadResults = await uploadMultipleImages(
       fileBuffers,
-      'sirahats/products',
+      "sirahats/products",
       {
         width: 800,
         height: 800,
-        crop: 'fill',
-        quality: 'auto',
-        format: 'auto',
+        crop: "fill",
+        quality: "auto",
+        format: "auto",
       }
     );
 
     // Prepare response data
-    const uploadedImages = uploadResults.map(result => ({
+    const uploadedImages = uploadResults.map((result) => ({
       public_id: result.public_id,
       url: result.secure_url,
       width: result.width,
@@ -58,7 +77,7 @@ export async function POST(request: NextRequest) {
       path: "/api/upload/product",
       metadata: {
         count: uploadedImages.length,
-        public_ids: uploadedImages.map(img => img.public_id),
+        public_ids: uploadedImages.map((img) => img.public_id),
       },
     });
 
@@ -67,7 +86,6 @@ export async function POST(request: NextRequest) {
       `${uploadedImages.length} image(s) uploaded successfully`,
       { statusCode: 201 }
     );
-
   } catch (error) {
     logger.error("Product upload error:", {
       path: "/api/upload/product",
@@ -84,14 +102,14 @@ export async function DELETE(request: NextRequest) {
     if (session instanceof NextResponse) return session;
 
     const { publicIds } = await request.json();
-    
+
     if (!publicIds || !Array.isArray(publicIds)) {
       return errorResponse("Invalid public IDs provided", 400);
     }
 
     // Delete images from Cloudinary
     const { deleteImage } = await import("@/lib/cloudinary");
-    await Promise.all(publicIds.map(publicId => deleteImage(publicId)));
+    await Promise.all(publicIds.map((publicId) => deleteImage(publicId)));
 
     logger.info("Product images deleted successfully", {
       path: "/api/upload/product",
@@ -104,7 +122,6 @@ export async function DELETE(request: NextRequest) {
       { deleted: publicIds },
       `${publicIds.length} image(s) deleted successfully`
     );
-
   } catch (error) {
     logger.error("Product image deletion error:", {
       path: "/api/upload/product",
@@ -112,4 +129,4 @@ export async function DELETE(request: NextRequest) {
     });
     return handleApiError(error);
   }
-} 
+}

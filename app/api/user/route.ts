@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import { User } from "@/lib/models/user";
 import { requireAuth } from "@/lib/middleware";
-import { handleApiError, successResponse, errorResponse } from "@/lib/api-response";
+import {
+  handleApiError,
+  successResponse,
+  errorResponse,
+} from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import bcrypt from "bcryptjs";
 
-export async function GET() {
+export const dynamic = "force-dynamic";
+
+export async function GET(req: NextRequest) {
   try {
     await connectToDatabase();
     const session = await requireAuth();
@@ -34,17 +40,15 @@ export async function PATCH(req: NextRequest) {
     if (session instanceof NextResponse) return session;
 
     const data = await req.json();
-    
+
     // If password is being updated, hash it
     if (data.password) {
       data.password = await bcrypt.hash(data.password, 12);
     }
 
-    const user = await User.findByIdAndUpdate(
-      session.user.id,
-      data,
-      { new: true }
-    ).select("-password");
+    const user = await User.findByIdAndUpdate(session.user.id, data, {
+      new: true,
+    }).select("-password");
 
     if (!user) {
       return errorResponse("User not found", 404);
@@ -58,4 +62,4 @@ export async function PATCH(req: NextRequest) {
     });
     return handleApiError(error);
   }
-} 
+}

@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectToDatabase } from "@/lib/db";
 import { requireAuth } from "@/lib/middleware";
-import { handleApiError, successResponse } from "@/lib/api-response";
+import { connectToDatabase } from "@/lib/db";
+import { Order } from "@/lib/models/order";
+import {
+  handleApiError,
+  successResponse,
+  errorResponse,
+} from "@/lib/api-response";
 import { logger } from "@/lib/logger";
+
+export const dynamic = "force-dynamic";
 
 // Paystack configuration
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;

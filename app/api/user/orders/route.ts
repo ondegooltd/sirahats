@@ -5,6 +5,8 @@ import { requireAuth } from "@/lib/middleware";
 import { handleApiError, successResponse } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
     await connectToDatabase();

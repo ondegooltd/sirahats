@@ -1,9 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/middleware";
-import { handleApiError, successResponse, errorResponse } from "@/lib/api-response";
+import { NextRequest, NextResponse } from "next/server";
+import {
+  handleApiError,
+  successResponse,
+  errorResponse,
+} from "@/lib/api-response";
 import { logger } from "@/lib/logger";
-import { uploadImage } from "@/lib/cloudinary";
-import { extractFilesFromFormData, fileToBuffer, validateImageFile, validateFileSize } from "@/lib/upload";
+import { uploadMultipleImages } from "@/lib/cloudinary";
+import {
+  extractFilesFromFormData,
+  fileToBuffer,
+  validateImageFile,
+  validateFileSize,
+} from "@/lib/upload";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     // Extract files from FormData
     const files = await extractFilesFromFormData(request);
-    
+
     if (files.length === 0) {
       return errorResponse("No file provided", 400);
     }
@@ -26,26 +37,32 @@ export async function POST(request: NextRequest) {
 
     // Validate file
     if (!validateImageFile(file)) {
-      return errorResponse(`Invalid file type: ${file.name}. Only images are allowed.`, 400);
+      return errorResponse(
+        `Invalid file type: ${file.name}. Only images are allowed.`,
+        400
+      );
     }
-    
+
     if (!validateFileSize(file)) {
-      return errorResponse(`File too large: ${file.name}. Maximum size is 5MB.`, 400);
+      return errorResponse(
+        `File too large: ${file.name}. Maximum size is 5MB.`,
+        400
+      );
     }
 
     // Convert file to buffer
     const fileBuffer = await fileToBuffer(file);
 
     // Upload to Cloudinary
-    const uploadResult = await uploadImage(
+    const uploadResult = await uploadMultipleImages(
       fileBuffer,
-      'sirahats/collections',
+      "sirahats/collections",
       {
         width: 600,
         height: 600,
-        crop: 'fill',
-        quality: 'auto',
-        format: 'auto',
+        crop: "fill",
+        quality: "auto",
+        format: "auto",
       }
     );
 
@@ -70,7 +87,6 @@ export async function POST(request: NextRequest) {
       "Collection image uploaded successfully",
       { statusCode: 201 }
     );
-
   } catch (error) {
     logger.error("Collection upload error:", {
       path: "/api/upload/collection",
@@ -87,7 +103,7 @@ export async function DELETE(request: NextRequest) {
     if (session instanceof NextResponse) return session;
 
     const { publicId } = await request.json();
-    
+
     if (!publicId) {
       return errorResponse("Public ID is required", 400);
     }
@@ -107,7 +123,6 @@ export async function DELETE(request: NextRequest) {
       { deleted: publicId },
       "Collection image deleted successfully"
     );
-
   } catch (error) {
     logger.error("Collection image deletion error:", {
       path: "/api/upload/collection",
@@ -115,4 +130,4 @@ export async function DELETE(request: NextRequest) {
     });
     return handleApiError(error);
   }
-} 
+}
