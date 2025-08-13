@@ -47,9 +47,9 @@ export default function ShippingPage() {
                     </h3>
                   </div>
                   <p className="text-gray-600 mb-3">5-7 business days</p>
-                  <p className="text-lg font-semibold text-gray-900">$15.00</p>
+                  <p className="text-lg font-semibold text-gray-900">₵20.00</p>
                   <p className="text-sm text-gray-500 mt-2">
-                    Free on orders over $450
+                    Free on orders over ₵450
                   </p>
                 </div>
 
@@ -61,7 +61,7 @@ export default function ShippingPage() {
                     </h3>
                   </div>
                   <p className="text-gray-600 mb-3">2-3 business days</p>
-                  <p className="text-lg font-semibold text-gray-900">$25.00</p>
+                  <p className="text-lg font-semibold text-gray-900">₵50.00</p>
                   <p className="text-sm text-gray-500 mt-2">
                     Available for most locations
                   </p>

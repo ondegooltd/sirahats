@@ -117,7 +117,7 @@ export default function WholesalePage() {
                     <li>
                       • Physical storefront or established online presence
                     </li>
-                    <li>• Minimum initial order of $250</li>
+                    <li>• Minimum initial order of ₵2500</li>
                     <li>• Commitment to brand values and quality standards</li>
                     <li>• Professional product presentation</li>
                   </ul>
@@ -339,7 +339,7 @@ export default function WholesalePage() {
                 href="tel:+15551234567"
                 className="inline-block border border-[#8BC34A] text-[#8BC34A] px-6 py-2 rounded-md font-medium hover:bg-[#8BC34A] hover:text-white transition-colors"
               >
-                Call (555) 123-4567
+                Call (030) 123-4567
               </a>
             </div>
           </motion.div>

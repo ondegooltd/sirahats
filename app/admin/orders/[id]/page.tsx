@@ -270,7 +270,7 @@ export default function OrderDetailsPage() {
                       </div>
                       <div className="text-right">
                         <p className="font-medium text-gray-900">
-                          ${item.price.toFixed(2)}
+                          ₵{item.price.toFixed(2)}
                         </p>
                         <p className="text-sm text-gray-500">each</p>
                       </div>
@@ -284,25 +284,25 @@ export default function OrderDetailsPage() {
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Subtotal</span>
                       <span className="text-gray-900">
-                        ${order.subtotal.toFixed(2)}
+                        ₵{order.subtotal.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Shipping</span>
                       <span className="text-gray-900">
-                        ${order.shipping.toFixed(2)}
+                        ₵{order.shipping.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Tax</span>
                       <span className="text-gray-900">
-                        ${order.tax.toFixed(2)}
+                        ₵{order.tax.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between text-lg font-medium pt-2 border-t border-gray-200">
                       <span className="text-gray-900">Total</span>
                       <span className="text-gray-900">
-                        ${order.total.toFixed(2)}
+                        ₵{order.total.toFixed(2)}
                       </span>
                     </div>
                   </div>

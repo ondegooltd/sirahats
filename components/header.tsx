@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { Search, ShoppingBag, User, Menu, X } from "lucide-react";
 import { useCart } from "@/contexts/cart-context";
 import { useSession, signOut } from "next-auth/react";
@@ -14,6 +15,7 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { state } = useCart();
   const { data: session } = useSession();
+  const pathname = usePathname();
 
   const navigation = [
     { name: "SHOP", href: "/shop" },
@@ -21,8 +23,15 @@ export default function Header() {
     { name: "ABOUT", href: "/about" },
     { name: "STOCKISTS", href: "/stockists" },
     { name: "WHOLESALE", href: "/wholesale" },
-    { name: "INSPIRATION", href: "/inspiration" },
+    // { name: "INSPIRATION", href: "/inspiration" },
   ];
+
+  const isActive = (href: string) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
+    return pathname.startsWith(href);
+  };
 
   return (
     <>
@@ -48,7 +57,11 @@ export default function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-gray-700 hover:text-[#8BC34A] font-medium text-sm transition-colors duration-200"
+                  className={`font-medium text-sm transition-colors duration-200 ${
+                    isActive(item.href)
+                      ? "text-[#8BC34A] border-b-2 border-[#8BC34A] pb-1"
+                      : "text-gray-700 hover:text-[#8BC34A]"
+                  }`}
                 >
                   {item.name}
                 </Link>
@@ -59,7 +72,11 @@ export default function Header() {
             <div className="flex items-center space-x-4">
               <Link
                 href={!!session?.user ? "/account" : "/login"}
-                className="text-gray-700 hover:text-[#8BC34A] transition-colors"
+                className={`transition-colors ${
+                  isActive("/account") || isActive("/login")
+                    ? "text-[#8BC34A]"
+                    : "text-gray-700 hover:text-[#8BC34A]"
+                }`}
               >
                 <User size={20} />
                 <span className="sr-only">Account</span>
@@ -75,7 +92,11 @@ export default function Header() {
 
               <Link
                 href="/cart"
-                className="relative text-gray-700 hover:text-[#8BC34A] transition-colors"
+                className={`relative transition-colors ${
+                  isActive("/cart")
+                    ? "text-[#8BC34A]"
+                    : "text-gray-700 hover:text-[#8BC34A]"
+                }`}
               >
                 <ShoppingBag size={20} />
                 {state.itemCount > 0 && (
@@ -112,7 +133,11 @@ export default function Header() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="block text-gray-700 hover:text-[#8BC34A] font-medium transition-colors duration-200"
+                    className={`block font-medium transition-colors duration-200 ${
+                      isActive(item.href)
+                        ? "text-[#8BC34A] border-l-4 border-[#8BC34A] pl-3"
+                        : "text-gray-700 hover:text-[#8BC34A]"
+                    }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {item.name}

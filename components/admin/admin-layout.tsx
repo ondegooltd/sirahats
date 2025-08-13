@@ -46,6 +46,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   useEffect(() => {
     if (status === "unauthenticated" || !session?.user) {
       router.push("/admin/login");
+    } else if (session?.user && session?.user.role !== "admin") {
+      signOut();
+      toast({
+        title: "Error",
+        description: "You don't have admin privileges.",
+        variant: "destructive",
+      });
+      router.push("/admin/login");
     }
   }, [status, session, router]);
 

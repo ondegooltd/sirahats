@@ -12,11 +12,12 @@ import {
   Shield,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { useToast } from "@/hooks/use-toast";
+import { useCart } from "@/contexts/cart-context";
 
 interface ProductPageProps {
   params: {
@@ -50,6 +51,8 @@ export default function ProductPage({ params }: ProductPageProps) {
   const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
   const { slug } = params;
+  const router = useRouter();
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -102,20 +105,13 @@ export default function ProductPage({ params }: ProductPageProps) {
     }
 
     try {
-      const response = await fetch("/api/cart", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          productId: product._id,
-          quantity: quantity,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to add to cart");
-      }
+      await addToCart({
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.images[0],
+        slug: product.slug,
+      }, quantity);
 
       toast({
         title: "Added to Cart",
@@ -127,6 +123,56 @@ export default function ProductPage({ params }: ProductPageProps) {
       toast({
         title: "Error",
         description: "Failed to add to cart",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (!session?.user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to purchase items.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!product) {
+      toast({
+        title: "Error",
+        description: "Product not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!product.inStock) {
+      toast({
+        title: "Out of Stock",
+        description: "This product is currently out of stock.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Add to cart using context
+      await addToCart({
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.images[0],
+        slug: product.slug,
+      }, quantity);
+
+      // Then redirect to checkout
+      router.push("/checkout");
+    } catch (error) {
+      console.error("Error with buy now:", error);
+      toast({
+        title: "Error",
+        description: "Failed to process purchase",
         variant: "destructive",
       });
     }
@@ -452,6 +498,15 @@ export default function ProductPage({ params }: ProductPageProps) {
                     <Heart className="w-5 h-5 text-gray-600" />
                   </button>
                 </div>
+
+                {/* Buy Now Button */}
+                <button
+                  onClick={handleBuyNow}
+                  disabled={!product.inStock}
+                  className="w-full flex items-center justify-center bg-gray-900 text-white px-6 py-3 rounded-md font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Buy Now
+                </button>
               </div>
 
               {/* Features */}

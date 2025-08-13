@@ -2,11 +2,11 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { signIn } from "next-auth/react";
+import { getSession, signIn, useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -17,41 +17,94 @@ export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const { data: session, status } = useSession();
+
+  // Redirect if already logged in as admin
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.role === "admin") {
+      router.push("/admin");
+    }
+  }, [session, status, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const res = await signIn("credentials", {
-        redirect: false,
+      await signIn("credentials", {
         email,
         password,
+        callbackUrl: "/admin",
       });
-      setIsLoading(false);
-      if (res?.ok) {
-        toast({
-          title: "Login Successful",
-          description: "Welcome to the admin dashboard!",
-          variant: "success",
-        });
-        router.push("/admin");
-      } else {
-        toast({
-          title: "Login Failed",
-          description: "Invalid email or password. Please try again.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Login Successful",
+        description: "Welcome to the admin dashboard!",
+        variant: "success",
+      });
+
+      // if (res?.ok) {
+      //   // Check if the user is an admin
+      //   const userResponse = await fetch("/api/user");
+      //   if (userResponse.ok) {
+      //     const userData = await userResponse.json();
+      //     if (userData.data?.role === "admin") {
+      //       await getSession();
+      //       toast({
+      //         title: "Login Successful",
+      //         description: "Welcome to the admin dashboard!",
+      //         variant: "success",
+      //       });
+      //       // window.location.reload();
+      //       router.push("/admin");
+      //     } else {
+      //       toast({
+      //         title: "Access Denied",
+      //         description: "You don't have admin privileges.",
+      //         variant: "destructive",
+      //       });
+      //     }
+      //   } else {
+      //     toast({
+      //       title: "Login Failed",
+      //       description: "Invalid email or password. Please try again.",
+      //       variant: "destructive",
+      //     });
+      //   }
+      // } else {
+      //   toast({
+      //     title: "Login Failed",
+      //     description: "Invalid email or password. Please try again.",
+      //     variant: "destructive",
+      //   });
+      // }
     } catch (error) {
-      setIsLoading(false);
+      console.error("Login error:", error);
       toast({
         title: "Error",
         description: "An error occurred during login. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  // Show loading while checking session
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#8BC34A] to-[#689F38] flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8BC34A] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't show login form if already authenticated as admin
+  if (status === "authenticated" && session?.user?.role === "admin") {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#8BC34A] to-[#689F38] flex items-center justify-center p-4">
@@ -134,7 +187,7 @@ export default function AdminLoginPage() {
 
         <div className="mt-6 text-center space-y-2">
           <p className="text-sm text-gray-600">
-            Demo credentials: admin@babatree.com / admin123
+            Demo credentials: admin@sirahats.com / admin123
           </p>
           <Link
             href="/admin/forgot-password"

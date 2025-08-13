@@ -107,11 +107,59 @@ function calculateTotals(state: CartState): CartState {
 const CartContext = createContext<{
   state: CartState;
   dispatch: React.Dispatch<CartAction>;
+  addToCart: (product: Omit<CartItem, "quantity">, quantity?: number) => Promise<void>;
 } | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, initialState);
   const { data: session } = useSession();
+
+  // Function to add item to cart and update API
+  const addToCart = async (product: Omit<CartItem, "quantity">, quantity: number = 1) => {
+    if (!session?.user) {
+      throw new Error("User not authenticated");
+    }
+
+    try {
+      const response = await fetch("/api/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: quantity,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add to cart");
+      }
+
+      // Update local cart state with the correct quantity
+      const existingItem = state.items.find(item => item.id === product.id);
+      if (existingItem) {
+        // If item exists, update quantity
+        dispatch({ 
+          type: "UPDATE_QUANTITY", 
+          payload: { id: product.id, quantity: existingItem.quantity + quantity } 
+        });
+      } else {
+        // If item doesn't exist, add with specified quantity
+        const newItem: CartItem = {
+          ...product,
+          quantity: quantity
+        };
+        dispatch({ 
+          type: "SET_CART", 
+          payload: [...state.items, newItem]
+        });
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      throw error;
+    }
+  };
 
   // Sync cart with API when user logs in
   useEffect(() => {
@@ -152,7 +200,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [session?.user]);
 
   return (
-    <CartContext.Provider value={{ state, dispatch }}>
+    <CartContext.Provider value={{ state, dispatch, addToCart }}>
       {children}
     </CartContext.Provider>
   );
