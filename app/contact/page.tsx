@@ -3,9 +3,67 @@
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { motion } from "framer-motion";
-import { Mail, Phone, MapPin, Clock } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, Loader2 } from "lucide-react";
+import { useState, useRef } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ContactPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData(e.currentTarget);
+      const data = {
+        firstName: formData.get("firstName") as string,
+        lastName: formData.get("lastName") as string,
+        email: formData.get("email") as string,
+        subject: formData.get("subject") as string,
+        message: formData.get("message") as string,
+      };
+
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to send message");
+      }
+
+      toast({
+        title: "Message Sent",
+        description:
+          "Thank you for your message! We'll get back to you within 24 hours.",
+        variant: "success",
+      });
+
+      // Reset form using ref
+      formRef.current?.reset();
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast({
+        title: "Message Failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <>
       <Header />
@@ -39,7 +97,7 @@ export default function ContactPage() {
                 Send us a message
               </h2>
 
-              <form className="space-y-6">
+              <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label
@@ -124,9 +182,11 @@ export default function ContactPage() {
 
                 <button
                   type="submit"
-                  className="w-full bg-[#8BC34A] text-white py-3 px-6 rounded-md font-medium hover:bg-[#689F38] transition-colors"
+                  disabled={isSubmitting}
+                  className="w-full bg-[#8BC34A] text-white py-3 px-6 rounded-md font-medium hover:bg-[#689F38] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                 >
-                  Send Message
+                  {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
+                  <span>{isSubmitting ? "Sending..." : "Send Message"}</span>
                 </button>
               </form>
             </motion.div>

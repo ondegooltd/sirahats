@@ -7,8 +7,11 @@ import {
   Youtube,
 } from "lucide-react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 export default function Footer() {
+  const { data: session } = useSession();
+
   return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -101,6 +104,18 @@ export default function Footer() {
                   Stockists
                 </Link>
               </li>
+              {/* Hidden admin link - only visible to logged-in users */}
+              {session?.user && (
+                <li>
+                  <Link
+                    href="/admin/login"
+                    className="text-gray-500 hover:text-gray-300 transition-colors text-xs"
+                    title="Admin Access"
+                  >
+                    Admin
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
 

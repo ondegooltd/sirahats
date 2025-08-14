@@ -208,6 +208,14 @@ export default function AccountPage() {
     },
   ];
 
+  // Add admin link if user might have admin access
+  const adminSidebarItem = {
+    id: "admin",
+    name: "Admin Panel",
+    icon: Settings,
+    href: "/admin/login",
+  };
+
   return (
     <>
       <Header />
@@ -271,6 +279,19 @@ export default function AccountPage() {
                       <span>{item.name}</span>
                     </Link>
                   ))}
+
+                  {/* Admin access link - subtle but discoverable */}
+                  {session?.user?.role === "admin" && (
+                    <Link
+                      href={adminSidebarItem.href}
+                      className="flex items-center space-x-3 p-3 rounded-md text-gray-500 hover:bg-gray-50 transition-colors border-t border-gray-100 mt-4 pt-4"
+                      title="Admin Access"
+                    >
+                      <adminSidebarItem.icon className="w-5 h-5" />
+                      <span className="text-sm">{adminSidebarItem.name}</span>
+                    </Link>
+                  )}
+
                   <button
                     onClick={handleLogout}
                     className="flex items-center space-x-3 p-3 rounded-md text-red-600 hover:bg-red-50 transition-colors w-full text-left"

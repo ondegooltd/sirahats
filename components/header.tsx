@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Search, ShoppingBag, User, Menu, X } from "lucide-react";
 import { useCart } from "@/contexts/cart-context";
 import { useSession, signOut } from "next-auth/react";
@@ -16,6 +16,7 @@ export default function Header() {
   const { state } = useCart();
   const { data: session } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
 
   const navigation = [
     { name: "SHOP", href: "/shop" },
@@ -32,6 +33,19 @@ export default function Header() {
     }
     return pathname.startsWith(href);
   };
+
+  // Keyboard shortcut for admin access (Ctrl+Shift+A)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key === "A") {
+        event.preventDefault();
+        router.push("/admin/login");
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [router]);
 
   return (
     <>

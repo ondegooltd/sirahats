@@ -1,66 +1,77 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, Eye, Trash2, MessageSquare, Reply, X } from "lucide-react";
+import {
+  Search,
+  Eye,
+  Trash2,
+  MessageSquare,
+  Reply,
+  X,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import AdminLayout from "@/components/admin/admin-layout";
 import { useToast } from "@/hooks/use-toast";
 
-// Mock contact messages data
-const mockMessages = [
-  {
-    id: "1",
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    subject: "Product Inquiry",
-    message:
-      "Hi, I'm interested in your large storage baskets. Do you have any in natural colors? Also, what are the dimensions of your largest basket?",
-    status: "unread",
-    createdAt: "2024-01-15T10:30:00Z",
-    category: "product_inquiry",
-  },
-  {
-    id: "2",
-    name: "Bob Smith",
-    email: "bob@example.com",
-    subject: "Shipping Question",
-    message:
-      "I placed an order last week (Order #BB123456) and haven't received a tracking number yet. Could you please provide an update on my order status?",
-    status: "read",
-    createdAt: "2024-01-14T14:20:00Z",
-    category: "shipping",
-  },
-  {
-    id: "3",
-    name: "Carol Davis",
-    email: "carol@example.com",
-    subject: "Custom Order Request",
-    message:
-      "I'm looking for custom-sized baskets for my retail store. Do you offer custom manufacturing? I need about 50 pieces in specific dimensions.",
-    status: "replied",
-    createdAt: "2024-01-13T09:15:00Z",
-    category: "custom_order",
-  },
-  {
-    id: "4",
-    name: "David Wilson",
-    email: "david@example.com",
-    subject: "Return Request",
-    message:
-      "I received my order yesterday but one of the baskets arrived damaged. The weaving is coming apart on one side. How can I return or exchange this item?",
-    status: "unread",
-    createdAt: "2024-01-12T16:45:00Z",
-    category: "returns",
-  },
-];
+interface ContactMessage {
+  _id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: "unread" | "read" | "replied";
+  category:
+    | "general"
+    | "product_inquiry"
+    | "shipping"
+    | "custom_order"
+    | "returns"
+    | "wholesale";
+  createdAt: string;
+  repliedAt?: string;
+  repliedBy?: string;
+  replyMessage?: string;
+  priority: "low" | "medium" | "high";
+}
 
 export default function AdminMessagesPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [messages, setMessages] = useState(mockMessages);
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [selectedMessage, setSelectedMessage] = useState<any>(null);
+  const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(
+    null
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const fetchMessages = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/contact");
+      if (!response.ok) {
+        throw new Error("Failed to fetch messages");
+      }
+      const data = await response.json();
+      setMessages(data.data.messages || []);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load contact messages",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMessages();
+  }, []);
 
   const filteredMessages = messages.filter((message) => {
     const matchesSearch =
@@ -76,36 +87,100 @@ export default function AdminMessagesPage() {
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
-  const handleDelete = (messageId: string) => {
+  const handleDelete = async (messageId: string) => {
     if (confirm("Are you sure you want to delete this message?")) {
-      setMessages(messages.filter((m) => m.id !== messageId));
-      toast({
-        title: "Message Deleted",
-        description: "The message has been successfully deleted.",
-        variant: "success",
-      });
+      try {
+        setIsUpdating(messageId);
+        const response = await fetch(`/api/contact/${messageId}`, {
+          method: "DELETE",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to delete message");
+        }
+
+        // Remove from local state
+        setMessages(messages.filter((m) => m._id !== messageId));
+        toast({
+          title: "Message Deleted",
+          description: "The message has been successfully deleted.",
+          variant: "success",
+        });
+      } catch (error) {
+        console.error("Error deleting message:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete message",
+          variant: "destructive",
+        });
+      } finally {
+        setIsUpdating(null);
+      }
     }
   };
 
-  const markAsRead = (messageId: string) => {
-    setMessages(
-      messages.map((message) =>
-        message.id === messageId ? { ...message, status: "read" } : message
-      )
-    );
+  const markAsRead = async (messageId: string) => {
+    try {
+      setIsUpdating(messageId);
+      const response = await fetch(`/api/contact/${messageId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "read" }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update message status");
+      }
+
+      // Update local state
+      setMessages(
+        messages.map((message) =>
+          message._id === messageId ? { ...message, status: "read" } : message
+        )
+      );
+    } catch (error) {
+      console.error("Error updating message:", error);
+    } finally {
+      setIsUpdating(null);
+    }
   };
 
-  const markAsReplied = (messageId: string) => {
-    setMessages(
-      messages.map((message) =>
-        message.id === messageId ? { ...message, status: "replied" } : message
-      )
-    );
-    toast({
-      title: "Message Replied",
-      description: "The message has been marked as replied.",
-      variant: "success",
-    });
+  const markAsReplied = async (messageId: string) => {
+    try {
+      setIsUpdating(messageId);
+      const response = await fetch(`/api/contact/${messageId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "replied" }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update message status");
+      }
+
+      // Update local state
+      setMessages(
+        messages.map((message) =>
+          message._id === messageId
+            ? { ...message, status: "replied" }
+            : message
+        )
+      );
+      toast({
+        title: "Message Replied",
+        description: "The message has been marked as replied.",
+        variant: "success",
+      });
+    } catch (error) {
+      console.error("Error updating message:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update message status",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(null);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -131,10 +206,25 @@ export default function AdminMessagesPage() {
         return "Custom Order";
       case "returns":
         return "Returns";
+      case "wholesale":
+        return "Wholesale";
       default:
         return "General";
     }
   };
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-[#8BC34A] mx-auto mb-4" />
+            <p className="text-gray-600">Loading contact messages...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -191,7 +281,20 @@ export default function AdminMessagesPage() {
               <option value="shipping">Shipping</option>
               <option value="custom_order">Custom Order</option>
               <option value="returns">Returns</option>
+              <option value="wholesale">Wholesale</option>
             </select>
+            <button
+              onClick={fetchMessages}
+              disabled={isLoading}
+              className="px-4 py-2 bg-[#8BC34A] text-white rounded-md hover:bg-[#689F38] transition-colors disabled:opacity-50 flex items-center space-x-2"
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4" />
+              )}
+              <span>Refresh</span>
+            </button>
           </div>
         </motion.div>
 
@@ -229,7 +332,7 @@ export default function AdminMessagesPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredMessages.map((message) => (
                   <tr
-                    key={message.id}
+                    key={message._id}
                     className={`hover:bg-gray-50 ${
                       message.status === "unread" ? "bg-blue-50" : ""
                     }`}
@@ -272,7 +375,7 @@ export default function AdminMessagesPage() {
                           onClick={() => {
                             setSelectedMessage(message);
                             if (message.status === "unread") {
-                              markAsRead(message.id);
+                              markAsRead(message._id);
                             }
                           }}
                           className="text-blue-600 hover:text-blue-900 p-1"
@@ -281,18 +384,28 @@ export default function AdminMessagesPage() {
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => markAsReplied(message.id)}
-                          className="text-green-600 hover:text-green-900 p-1"
+                          onClick={() => markAsReplied(message._id)}
+                          disabled={isUpdating === message._id}
+                          className="text-green-600 hover:text-green-900 p-1 disabled:opacity-50"
                           title="Mark as Replied"
                         >
-                          <Reply className="w-4 h-4" />
+                          {isUpdating === message._id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Reply className="w-4 h-4" />
+                          )}
                         </button>
                         <button
-                          onClick={() => handleDelete(message.id)}
-                          className="text-red-600 hover:text-red-900 p-1"
+                          onClick={() => handleDelete(message._id)}
+                          disabled={isUpdating === message._id}
+                          className="text-red-600 hover:text-red-900 p-1 disabled:opacity-50"
                           title="Delete Message"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          {isUpdating === message._id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
                         </button>
                       </div>
                     </td>
@@ -396,7 +509,7 @@ export default function AdminMessagesPage() {
                   <div className="flex justify-end space-x-3 pt-4 border-t">
                     <button
                       onClick={() => {
-                        markAsReplied(selectedMessage.id);
+                        markAsReplied(selectedMessage._id);
                         setSelectedMessage(null);
                       }}
                       className="px-4 py-2 bg-[#8BC34A] text-white rounded-md hover:bg-[#689F38] transition-colors"

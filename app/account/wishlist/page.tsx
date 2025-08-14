@@ -23,6 +23,21 @@ interface WishlistProduct {
   inStock: boolean;
 }
 
+interface RecommendedProduct {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  images: string[];
+  slug: string;
+  category: string;
+  inStock: boolean;
+  collectionId?: {
+    name: string;
+    slug: string;
+  };
+}
+
 export default function WishlistPage() {
   const { data: session } = useSession();
   const { dispatch } = useCart();
@@ -30,7 +45,12 @@ export default function WishlistPage() {
   const { toast } = useToast();
 
   const [wishlistItems, setWishlistItems] = useState<WishlistProduct[]>([]);
+  const [recommendedProducts, setRecommendedProducts] = useState<
+    RecommendedProduct[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] =
+    useState(false);
   const [isRemoving, setIsRemoving] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,9 +80,27 @@ export default function WishlistPage() {
     }
   };
 
+  const fetchRecommendations = async () => {
+    try {
+      setIsLoadingRecommendations(true);
+      const response = await fetch("/api/products/recommendations");
+      if (!response.ok) {
+        throw new Error("Failed to fetch recommendations");
+      }
+      const data = await response.json();
+      setRecommendedProducts(data.data);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+      // Don't show error toast for recommendations as it's not critical
+    } finally {
+      setIsLoadingRecommendations(false);
+    }
+  };
+
   useEffect(() => {
     if (session?.user) {
       fetchWishlist();
+      fetchRecommendations();
     }
   }, [session?.user]);
 
@@ -83,6 +121,10 @@ export default function WishlistPage() {
 
       const data = await response.json();
       setWishlistItems(data.data);
+
+      // Refresh recommendations after removing from wishlist
+      fetchRecommendations();
+
       toast({
         title: "Removed from Wishlist",
         description: "Item has been removed from your wishlist.",
@@ -99,7 +141,7 @@ export default function WishlistPage() {
     }
   };
 
-  const addToCart = async (product: WishlistProduct) => {
+  const addToCart = async (product: WishlistProduct | RecommendedProduct) => {
     try {
       const response = await fetch("/api/cart", {
         method: "POST",
@@ -312,26 +354,83 @@ export default function WishlistPage() {
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">
                     You might also like
                   </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {/* This could be populated with recommended products based on wishlist items */}
-                    <div className="bg-white rounded-lg shadow-sm border overflow-hidden group">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src="/placeholder.svg"
-                          alt="Recommended product"
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-medium text-gray-900 mb-1 group-hover:text-[#8BC34A] transition-colors">
-                          Recommended Product
-                        </h3>
-                        <p className="text-sm text-gray-600 mb-2">Category</p>
-                        <p className="font-semibold text-gray-900">₵0.00</p>
-                      </div>
+
+                  {isLoadingRecommendations ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div
+                          key={i}
+                          className="bg-white rounded-lg shadow-sm border overflow-hidden animate-pulse"
+                        >
+                          <div className="relative aspect-square bg-gray-200"></div>
+                          <div className="p-4">
+                            <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                            <div className="h-3 bg-gray-200 rounded mb-2"></div>
+                            <div className="h-5 bg-gray-200 rounded mb-4"></div>
+                            <div className="h-10 bg-gray-200 rounded"></div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
+                  ) : recommendedProducts.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {recommendedProducts.map((product, index) => (
+                        <motion.div
+                          key={product._id}
+                          initial={{ opacity: 0, y: 30 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.6, delay: index * 0.1 }}
+                          className="bg-white rounded-lg shadow-sm border overflow-hidden group"
+                        >
+                          <div className="relative">
+                            <Link href={`/product/${product.slug}`}>
+                              <div className="relative aspect-square overflow-hidden">
+                                <Image
+                                  src={product.images[0] || "/placeholder.svg"}
+                                  alt={product.name}
+                                  fill
+                                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                              </div>
+                            </Link>
+                          </div>
+
+                          <div className="p-4">
+                            <Link href={`/product/${product.slug}`}>
+                              <h3 className="font-medium text-gray-900 mb-1 group-hover:text-[#8BC34A] transition-colors">
+                                {product.name}
+                              </h3>
+                            </Link>
+                            <p className="text-sm text-gray-600 mb-2">
+                              {product.category}
+                            </p>
+                            <p className="font-semibold text-gray-900 mb-4">
+                              {formatCurrency(product.price)}
+                            </p>
+
+                            <button
+                              onClick={() => addToCart(product)}
+                              disabled={!product.inStock}
+                              className="w-full flex items-center justify-center space-x-2 bg-[#8BC34A] text-white py-2 px-4 rounded-md hover:bg-[#689F38] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <ShoppingBag className="w-4 h-4" />
+                              <span>
+                                {product.inStock
+                                  ? "Add to Cart"
+                                  : "Out of Stock"}
+                              </span>
+                            </button>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600">
+                        No recommendations available at the moment.
+                      </p>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </>

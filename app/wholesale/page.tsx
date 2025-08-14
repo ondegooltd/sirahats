@@ -3,9 +3,79 @@
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { motion } from "framer-motion";
-import { Package, Truck, Users, Award, DollarSign, Clock } from "lucide-react";
+import {
+  Package,
+  Truck,
+  Users,
+  Award,
+  DollarSign,
+  Clock,
+  Loader2,
+} from "lucide-react";
+import { useState, useRef } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function WholesalePage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData(e.currentTarget);
+      const data = {
+        businessName: formData.get("businessName") as string,
+        contactName: formData.get("contactName") as string,
+        email: formData.get("email") as string,
+        phone: formData.get("phone") as string,
+        website: formData.get("website") as string,
+        businessType: formData.get("businessType") as string,
+        address: formData.get("address") as string,
+        taxId: formData.get("taxId") as string,
+        message: formData.get("message") as string,
+      };
+
+      const response = await fetch("/api/wholesale", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to submit application");
+      }
+
+      toast({
+        title: "Application Submitted",
+        description:
+          "Thank you for your interest! We'll review your application and get back to you within 2-3 business days.",
+        variant: "success",
+      });
+
+      // Reset form using ref
+      formRef.current?.reset();
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      toast({
+        title: "Submission Failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to submit application. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <>
       <Header />
@@ -151,7 +221,11 @@ export default function WholesalePage() {
                 Apply for Wholesale Account
               </h2>
 
-              <form className="space-y-6 bg-white p-8 rounded-lg shadow-sm">
+              <form
+                ref={formRef}
+                onSubmit={handleSubmit}
+                className="space-y-6 bg-white p-8 rounded-lg shadow-sm"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label
@@ -253,6 +327,7 @@ export default function WholesalePage() {
                     <option value="online-store">Online Store</option>
                     <option value="interior-design">Interior Design</option>
                     <option value="gallery">Art Gallery</option>
+                    <option value="boutique">Boutique</option>
                     <option value="other">Other</option>
                   </select>
                 </div>
@@ -307,9 +382,13 @@ export default function WholesalePage() {
 
                 <button
                   type="submit"
-                  className="w-full bg-[#8BC34A] text-white py-3 px-6 rounded-md font-medium hover:bg-[#689F38] transition-colors"
+                  disabled={isSubmitting}
+                  className="w-full bg-[#8BC34A] text-white py-3 px-6 rounded-md font-medium hover:bg-[#689F38] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                 >
-                  Submit Application
+                  {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
+                  <span>
+                    {isSubmitting ? "Submitting..." : "Submit Application"}
+                  </span>
                 </button>
               </form>
             </motion.div>

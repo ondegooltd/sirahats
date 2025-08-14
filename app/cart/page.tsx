@@ -195,10 +195,10 @@ export default function CartPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="bg-white p-6 rounded-lg shadow-sm border"
+                    className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border"
                   >
-                    <div className="flex items-center space-x-4">
-                      <div className="relative w-20 h-20 rounded-md overflow-hidden">
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                      <div className="relative w-full sm:w-20 h-32 sm:h-20 rounded-md overflow-hidden flex-shrink-0">
                         <Image
                           src={item.image || "/placeholder.svg"}
                           alt={item.name}
@@ -207,67 +207,69 @@ export default function CartPage() {
                         />
                       </div>
 
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base mb-1">
                           {item.name}
                         </h3>
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 text-sm sm:text-base mb-3 sm:mb-0">
                           {formatCurrency(item.price)}
                         </p>
                       </div>
 
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center justify-between sm:justify-end space-x-2 sm:space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            title="btn"
+                            onClick={() =>
+                              updateQuantity(item.id, item.quantity - 1)
+                            }
+                            disabled={updatingItem === item.id}
+                            className="p-1 rounded-md border border-gray-300 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                          >
+                            {updatingItem === item.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Minus className="w-4 h-4" />
+                            )}
+                          </button>
+                          <span className="w-8 sm:w-12 text-center font-medium text-sm sm:text-base">
+                            {item.quantity}
+                          </span>
+                          <button
+                            title="btn"
+                            onClick={() =>
+                              updateQuantity(item.id, item.quantity + 1)
+                            }
+                            disabled={updatingItem === item.id}
+                            className="p-1 rounded-md border border-gray-300 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                          >
+                            {updatingItem === item.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Plus className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="font-semibold text-gray-900 text-sm sm:text-base">
+                            {formatCurrency(item.price * item.quantity)}
+                          </p>
+                        </div>
+
                         <button
                           title="btn"
-                          onClick={() =>
-                            updateQuantity(item.id, item.quantity - 1)
-                          }
-                          disabled={updatingItem === item.id}
-                          className="p-1 rounded-md border border-gray-300 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                          onClick={() => removeItem(item.id)}
+                          disabled={removingItem === item.id}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
                         >
-                          {updatingItem === item.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                          {removingItem === item.id ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
                           ) : (
-                            <Minus className="w-4 h-4" />
-                          )}
-                        </button>
-                        <span className="w-12 text-center font-medium">
-                          {item.quantity}
-                        </span>
-                        <button
-                          title="btn"
-                          onClick={() =>
-                            updateQuantity(item.id, item.quantity + 1)
-                          }
-                          disabled={updatingItem === item.id}
-                          className="p-1 rounded-md border border-gray-300 hover:bg-gray-100 transition-colors disabled:opacity-50"
-                        >
-                          {updatingItem === item.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Plus className="w-4 h-4" />
+                            <X className="w-5 h-5" />
                           )}
                         </button>
                       </div>
-
-                      <div className="text-right">
-                        <p className="font-semibold text-gray-900">
-                          {formatCurrency(item.price * item.quantity)}
-                        </p>
-                      </div>
-
-                      <button
-                        title="btn"
-                        onClick={() => removeItem(item.id)}
-                        disabled={removingItem === item.id}
-                        className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
-                      >
-                        {removingItem === item.id ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                          <X className="w-5 h-5" />
-                        )}
-                      </button>
                     </div>
                   </motion.div>
                 ))}
