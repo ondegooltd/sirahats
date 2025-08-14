@@ -10,6 +10,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import AdminLayout from "@/components/admin/admin-layout";
+import Link from "next/link";
 
 const stats = [
   {
@@ -35,7 +36,7 @@ const stats = [
   },
   {
     name: "Revenue",
-    value: "$12,450",
+    value: "₵12,450",
     icon: DollarSign,
     change: "+15%",
     changeType: "increase",
@@ -46,28 +47,28 @@ const recentOrders = [
   {
     id: "BB123456",
     customer: "John Doe",
-    amount: "$89.00",
+    amount: "89.00",
     status: "Completed",
     date: "2024-01-15",
   },
   {
     id: "BB123457",
     customer: "Jane Smith",
-    amount: "$125.00",
+    amount: "125.00",
     status: "Processing",
     date: "2024-01-15",
   },
   {
     id: "BB123458",
     customer: "Mike Johnson",
-    amount: "$65.00",
+    amount: "65.00",
     status: "Shipped",
     date: "2024-01-14",
   },
   {
     id: "BB123459",
     customer: "Sarah Wilson",
-    amount: "$200.00",
+    amount: "200.00",
     status: "Pending",
     date: "2024-01-14",
   },
@@ -131,7 +132,11 @@ export default function AdminDashboard() {
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <stat.icon className="h-6 w-6 text-gray-400" />
+                    {stat.name === "Revenue" ? (
+                      <span className="h-6 w-6 text-gray-400 text-2xl">₵</span>
+                    ) : (
+                      <stat.icon className="h-6 w-6 text-gray-400" />
+                    )}
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
@@ -168,7 +173,7 @@ export default function AdminDashboard() {
             </h3>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               {quickActions.map((action) => (
-                <a
+                <Link
                   key={action.name}
                   href={action.href}
                   className="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#8BC34A] rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
@@ -185,7 +190,7 @@ export default function AdminDashboard() {
                       {action.name}
                     </h3>
                   </div>
-                </a>
+                </Link>
               ))}
             </div>
           </div>
@@ -233,7 +238,7 @@ export default function AdminDashboard() {
                         {order.customer}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {order.amount}
+                        ₵{order.amount}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
