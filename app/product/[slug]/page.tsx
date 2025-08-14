@@ -105,13 +105,16 @@ export default function ProductPage({ params }: ProductPageProps) {
     }
 
     try {
-      await addToCart({
-        id: product._id,
-        name: product.name,
-        price: product.price,
-        image: product.images[0],
-        slug: product.slug,
-      }, quantity);
+      await addToCart(
+        {
+          id: product._id,
+          name: product.name,
+          price: product.price,
+          image: product.images[0],
+          slug: product.slug,
+        },
+        quantity
+      );
 
       toast({
         title: "Added to Cart",
@@ -123,56 +126,6 @@ export default function ProductPage({ params }: ProductPageProps) {
       toast({
         title: "Error",
         description: "Failed to add to cart",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleBuyNow = async () => {
-    if (!session?.user) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to purchase items.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!product) {
-      toast({
-        title: "Error",
-        description: "Product not found",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!product.inStock) {
-      toast({
-        title: "Out of Stock",
-        description: "This product is currently out of stock.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // Add to cart using context
-      await addToCart({
-        id: product._id,
-        name: product.name,
-        price: product.price,
-        image: product.images[0],
-        slug: product.slug,
-      }, quantity);
-
-      // Then redirect to checkout
-      router.push("/checkout");
-    } catch (error) {
-      console.error("Error with buy now:", error);
-      toast({
-        title: "Error",
-        description: "Failed to process purchase",
         variant: "destructive",
       });
     }
@@ -222,6 +175,66 @@ export default function ProductPage({ params }: ProductPageProps) {
       toast({
         title: "Error",
         description: "Failed to add to wishlist",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (!session?.user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to purchase items.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!product) {
+      toast({
+        title: "Error",
+        description: "Product not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!product.inStock) {
+      toast({
+        title: "Out of Stock",
+        description: "This product is currently out of stock.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Add to cart using context
+      await addToCart(
+        {
+          id: product._id,
+          name: product.name,
+          price: product.price,
+          image: product.images[0],
+          slug: product.slug,
+        },
+        quantity
+      );
+
+      // Show success message
+      toast({
+        title: "Added to Cart",
+        description: `${product.name} has been added to your cart.`,
+        variant: "success",
+      });
+
+      // Navigate to checkout
+      router.push("/checkout");
+    } catch (error) {
+      console.error("Error with buy now:", error);
+      toast({
+        title: "Error",
+        description: "Failed to process purchase",
         variant: "destructive",
       });
     }

@@ -107,7 +107,10 @@ function calculateTotals(state: CartState): CartState {
 const CartContext = createContext<{
   state: CartState;
   dispatch: React.Dispatch<CartAction>;
-  addToCart: (product: Omit<CartItem, "quantity">, quantity?: number) => Promise<void>;
+  addToCart: (
+    product: Omit<CartItem, "quantity">,
+    quantity?: number
+  ) => Promise<void>;
 } | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -115,12 +118,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { data: session } = useSession();
 
   // Function to add item to cart and update API
-  const addToCart = async (product: Omit<CartItem, "quantity">, quantity: number = 1) => {
+  const addToCart = async (
+    product: Omit<CartItem, "quantity">,
+    quantity: number = 1
+  ) => {
     if (!session?.user) {
       throw new Error("User not authenticated");
     }
 
     try {
+      dispatch({ type: "SET_LOADING", payload: true });
+
       const response = await fetch("/api/cart", {
         method: "POST",
         headers: {
@@ -137,27 +145,32 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
 
       // Update local cart state with the correct quantity
-      const existingItem = state.items.find(item => item.id === product.id);
+      const existingItem = state.items.find((item) => item.id === product.id);
       if (existingItem) {
         // If item exists, update quantity
-        dispatch({ 
-          type: "UPDATE_QUANTITY", 
-          payload: { id: product.id, quantity: existingItem.quantity + quantity } 
+        dispatch({
+          type: "UPDATE_QUANTITY",
+          payload: {
+            id: product.id,
+            quantity: existingItem.quantity + quantity,
+          },
         });
       } else {
         // If item doesn't exist, add with specified quantity
         const newItem: CartItem = {
           ...product,
-          quantity: quantity
+          quantity: quantity,
         };
-        dispatch({ 
-          type: "SET_CART", 
-          payload: [...state.items, newItem]
+        dispatch({
+          type: "SET_CART",
+          payload: [...state.items, newItem],
         });
       }
     } catch (error) {
       console.error("Error adding to cart:", error);
       throw error;
+    } finally {
+      dispatch({ type: "SET_LOADING", payload: false });
     }
   };
 

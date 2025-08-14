@@ -14,16 +14,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   return (
     <CartProvider>
       <OrderProvider>
-        {!session ||
+        {/* {!session ||
           (session?.user.role === "user" && (
             <>
               <TopBanner />
               <Header />
-            </>
-          ))}
-        <main>{children}</main>
-        {!session || (session?.user.role === "user" && <Footer />)}
-
+              </>
+              ))} */}
+        <main>
+          <TopBanner />
+          {children}
+        </main>
+        {/* {!session || (session?.user.role === "user" && <Footer />)} */}
         <Toaster />
       </OrderProvider>
     </CartProvider>

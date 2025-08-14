@@ -130,12 +130,31 @@ export default function AdminUsersPage() {
       });
 
       if (response.ok) {
+        // Update local state immediately for instant UI feedback
+        setUsers((prevUsers) =>
+          prevUsers.filter((user) => user._id !== userId)
+        );
+
+        // Update pagination if needed
+        if (pagination) {
+          setPagination((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  totalItems: prev.totalItems - 1,
+                  totalPages: Math.ceil(
+                    (prev.totalItems - 1) / prev.itemsPerPage
+                  ),
+                }
+              : null
+          );
+        }
+
         toast({
           title: "User Deleted",
           description: "The user has been successfully deleted.",
           variant: "success",
         });
-        fetchUsers(); // Refresh the current page
       } else {
         throw new Error("Failed to delete user");
       }
@@ -166,12 +185,18 @@ export default function AdminUsersPage() {
       });
 
       if (response.ok) {
+        // Update local state immediately for instant UI feedback
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user._id === userId ? { ...user, status: newStatus } : user
+          )
+        );
+
         toast({
           title: "User Status Updated",
           description: "The user status has been successfully updated.",
           variant: "success",
         });
-        fetchUsers(); // Refresh the current page
       } else {
         throw new Error("Failed to update user status");
       }

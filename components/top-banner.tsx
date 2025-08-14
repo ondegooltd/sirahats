@@ -35,7 +35,7 @@ export default function TopBanner() {
 
         <div className="hidden md:block text-center flex-1">
           <span>
-            Free Carbon-Offset Shipping on orders from $450 USD. Exclusions
+            Free Carbon-Offset Shipping on orders from ₵450 GHS. Exclusions
             Apply.
           </span>
         </div>
@@ -46,13 +46,10 @@ export default function TopBanner() {
             className="bg-transparent text-white text-sm border-none outline-none cursor-pointer"
           >
             <option value="USD" className="text-black">
+              Ghana (GHS ₵)
+            </option>
+            <option value="USD" className="text-black">
               United States (USD $)
-            </option>
-            <option value="EUR" className="text-black">
-              Europe (EUR €)
-            </option>
-            <option value="GBP" className="text-black">
-              United Kingdom (GBP £)
             </option>
           </select>
         </div>

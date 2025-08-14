@@ -69,16 +69,25 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (cartState.items.length === 0) {
-      toast({
-        title: "Empty Cart",
-        description: "Your cart is empty. Add some items before checkout.",
-        variant: "destructive",
-      });
-      router.push("/shop");
-      return;
+    // Only check cart if we're not loading and have finished initial load
+    if (!cartState.isLoading) {
+      if (cartState.items.length === 0) {
+        toast({
+          title: "Empty Cart",
+          description: "Your cart is empty. Add some items before checkout.",
+          variant: "destructive",
+        });
+        router.push("/shop");
+        return;
+      }
     }
-  }, [session?.user, cartState.items.length, router, toast]);
+  }, [
+    session?.user,
+    cartState.items.length,
+    cartState.isLoading,
+    router,
+    toast,
+  ]);
 
   const subtotal = cartState.items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -246,8 +255,31 @@ export default function CheckoutPage() {
     }
   };
 
-  if (!session?.user || cartState.items.length === 0) {
+  if (
+    !session?.user ||
+    (cartState.items.length === 0 && !cartState.isLoading)
+  ) {
     return null;
+  }
+
+  // Show loading state while cart is being loaded
+  if (cartState.isLoading) {
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen bg-gray-50 py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <Loader2 className="w-8 h-8 animate-spin text-[#8BC34A] mx-auto mb-4" />
+                <p className="text-gray-600">Loading your cart...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
   }
 
   return (
