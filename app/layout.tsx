@@ -12,6 +12,20 @@ export const metadata: Metadata = {
   description:
     "Beautiful handwoven baskets and home decor from African artisans",
   generator: "v0.dev",
+  keywords: [
+    "ghana",
+    "baskets",
+    "village",
+    "rural",
+    "handwoven",
+    "artisan",
+    "africa",
+    "kente",
+    "decor",
+    "home decor",
+    "handcraft",
+    "tray",
+  ],
 };
 
 export default function RootLayout({
