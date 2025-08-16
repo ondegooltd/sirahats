@@ -148,13 +148,15 @@ export default function CheckoutPage() {
           product: item.id,
           quantity: item.quantity,
           price: item.price,
+          name: item.name,
+          image: item.image,
         })),
         subtotal,
         shipping,
         tax,
         total,
-        status: "pending",
-        paymentStatus: "pending",
+        status: "Pending",
+        paymentStatus: "Pending",
         shippingAddress: {
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -165,7 +167,10 @@ export default function CheckoutPage() {
           country: formData.country,
           phone: formData.phone,
         },
+        user: session?.user.id,
       };
+
+      console.log(orderData);
 
       const response = await fetch("/api/orders", {
         method: "POST",
@@ -200,6 +205,7 @@ export default function CheckoutPage() {
           amount: total,
           email: formData.email,
           reference,
+          order_id: order._id,
           callback_url: `${window.location.origin}/checkout/success?orderId=${order._id}`,
         }),
       });

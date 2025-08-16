@@ -28,10 +28,11 @@ export interface IOrder extends Document {
     country: string;
     phone: string;
   };
-  paymentMethod: {
-    cardNumber: string;
-    nameOnCard: string;
+  paymentMethod?: {
+    cardNumber?: string;
+    nameOnCard?: string;
   };
+  paymentStatus?: "Paid" | "Awaiting Payment" | "Failed";
 }
 
 const OrderItemSchema = new Schema<IOrderItem>({
@@ -68,9 +69,10 @@ const OrderSchema = new Schema<IOrder>(
       phone: { type: String, required: true },
     },
     paymentMethod: {
-      cardNumber: { type: String, required: true },
-      nameOnCard: { type: String, required: true },
+      cardNumber: { type: String, required: false },
+      nameOnCard: { type: String, required: false },
     },
+    paymentStatus: { type: String, default: "Awaiting Payment" },
   },
   { timestamps: true }
 );

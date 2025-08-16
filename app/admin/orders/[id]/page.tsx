@@ -124,8 +124,8 @@ export default function OrderDetailsPage() {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
+    switch (status.toLowerCase()) {
+      case "delivered":
         return "bg-green-100 text-green-800";
       case "processing":
         return "bg-yellow-100 text-yellow-800";
@@ -134,6 +134,21 @@ export default function OrderDetailsPage() {
       case "pending":
         return "bg-gray-100 text-gray-800";
       case "cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getPaymentStatusColor = (status: string) => {
+    switch (status) {
+      case "Paid":
+        return "bg-green-100 text-green-800";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "Awaiting Payment":
+        return "bg-gray-100 text-gray-800";
+      case "Failed":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -247,7 +262,14 @@ export default function OrderDetailsPage() {
                 className="bg-white shadow rounded-lg p-6"
               >
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Order Items
+                  Order Items{" "}
+                  <span
+                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border-0 ${getPaymentStatusColor(
+                      order.paymentStatus
+                    )}`}
+                  >
+                    {order.paymentStatus || "Not Paid"}
+                  </span>
                 </h3>
                 <div className="space-y-4">
                   {order.items.map((item: any, idx: number) => (

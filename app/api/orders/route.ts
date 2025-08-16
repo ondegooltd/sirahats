@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import { Order } from "@/lib/models/order";
 import { User } from "@/lib/models/user";
-import { handleApiError, successResponse } from "@/lib/api-response";
+import {
+  errorResponse,
+  handleApiError,
+  successResponse,
+} from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import { EmailService } from "@/lib/email-service";
+import { Cart } from "@/lib/models";
 
 export async function GET(req: NextRequest) {
   try {
@@ -88,24 +93,26 @@ export async function POST(req: NextRequest) {
     await connectToDatabase();
     const data = await req.json();
 
+    const user = await User.findById(data.user);
+    if (!user) {
+      return errorResponse("User not found", 404);
+    }
+
     // Create order
     const order = await Order.create(data);
 
     // Send order confirmation email if user exists
-    if (data.user) {
+    if (user.email) {
       try {
-        const user = await User.findById(data.user);
-        if (user) {
-          await EmailService.sendOrderConfirmationEmail(order, user);
-          logger.info("Order confirmation email sent successfully", {
-            path: "/api/orders",
-            metadata: {
-              orderId: order._id,
-              userId: user._id,
-              email: user.email,
-            },
-          });
-        }
+        await EmailService.sendOrderConfirmationEmail(order, user);
+        logger.info("Order confirmation email sent successfully", {
+          path: "/api/orders",
+          metadata: {
+            orderId: order._id,
+            userId: user._id,
+            email: user.email,
+          },
+        });
       } catch (emailError) {
         logger.error("Failed to send order confirmation email", {
           path: "/api/orders",
@@ -118,6 +125,18 @@ export async function POST(req: NextRequest) {
         });
         // Don't fail order creation if email fails
       }
+    }
+
+    try {
+      await Cart.deleteMany();
+      logger.info("Cart emptied successfully", {
+        path: "/api/orders",
+      });
+    } catch (error) {
+      logger.error("Failed to empty cart", {
+        path: "/api/orders",
+        error,
+      });
     }
 
     return successResponse(order, "Order created successfully", {

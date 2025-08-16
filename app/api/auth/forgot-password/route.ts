@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import { User } from "@/lib/models/user";
-import { handleApiError, successResponse } from "@/lib/api-response";
+import {
+  errorResponse,
+  handleApiError,
+  successResponse,
+} from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import crypto from "crypto";
 import { Resend } from "resend";
@@ -14,7 +18,7 @@ export async function POST(req: NextRequest) {
     const { email } = await req.json();
 
     if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+      return errorResponse("Email is required", 400);
     }
 
     // Find user by email

@@ -3,6 +3,15 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import path from "path";
 
+import "@/lib/models/user";
+import "@/lib/models/collection";
+import "@/lib/models/product";
+import "@/lib/models/cart";
+import "@/lib/models/order";
+import "@/lib/models/webhook";
+import "@/lib/models/contact";
+import "@/lib/models/wholesale";
+
 // Load .env.local file
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 

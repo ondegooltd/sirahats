@@ -43,6 +43,7 @@ interface Order {
     country: string;
     phone: string;
   };
+  paymentStatus: "Paid" | "Awaiting Payment" | "Failed";
 }
 
 interface Pagination {
@@ -151,6 +152,21 @@ export default function OrdersPage() {
       case "Pending":
         return "bg-gray-100 text-gray-800";
       case "Cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getPaymentStatusColor = (status: string) => {
+    switch (status) {
+      case "Paid":
+        return "bg-green-100 text-green-800";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "Awaiting Payment":
+        return "bg-gray-100 text-gray-800";
+      case "Failed":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -267,6 +283,13 @@ export default function OrdersPage() {
                             )}`}
                           >
                             {order.status}
+                          </span>
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border-0 ${getPaymentStatusColor(
+                              order.paymentStatus
+                            )}`}
+                          >
+                            {order.paymentStatus || "Awaiting Payment"}
                           </span>
                         </div>
                         <div className="text-right">

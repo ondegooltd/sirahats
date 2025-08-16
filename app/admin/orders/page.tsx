@@ -39,7 +39,8 @@ interface Order {
     email: string;
   };
   total: number;
-  status: string;
+  status: "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled";
+  paymentStatus: "Paid" | "Awaiting Payment" | "Failed";
   createdAt: string;
   items: OrderItem[];
 }
@@ -136,10 +137,10 @@ export default function AdminOrdersPage() {
       page: 1,
       limit: 10,
     });
-
+  //"Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled";
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
+    switch (status.toLowerCase()) {
+      case "delivered":
         return "bg-green-100 text-green-800";
       case "processing":
         return "bg-yellow-100 text-yellow-800";
@@ -148,6 +149,20 @@ export default function AdminOrdersPage() {
       case "pending":
         return "bg-gray-100 text-gray-800";
       case "cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+  const getPaymentStatusColor = (status: string) => {
+    switch (status) {
+      case "Paid":
+        return "bg-green-100 text-green-800";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "Awaiting Payment":
+        return "bg-gray-100 text-gray-800";
+      case "Failed":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -255,11 +270,11 @@ export default function AdminOrdersPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8BC34A] focus:border-transparent"
                 >
                   <option value="all">All</option>
-                  <option value="pending">Pending</option>
-                  <option value="processing">Processing</option>
-                  <option value="shipped">Shipped</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Processing">Processing</option>
+                  <option value="Shipped">Shipped</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
                 </select>
               </div>
               <div>
@@ -353,6 +368,9 @@ export default function AdminOrdersPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Payment Status
+                  </th>
                   <th
                     onClick={() => handleSort("createdAt")}
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
@@ -428,13 +446,24 @@ export default function AdminOrdersPage() {
                             order.status
                           )}`}
                         >
-                          <option value="pending">Pending</option>
-                          <option value="processing">Processing</option>
-                          <option value="shipped">Shipped</option>
-                          <option value="completed">Completed</option>
-                          <option value="cancelled">Cancelled</option>
+                          <option value="Pending">Pending</option>
+                          <option value="Processing">Processing</option>
+                          <option value="Shipped">Shipped</option>
+                          <option value="Delivered">Delivered</option>
+                          <option value="Cancelled">Cancelled</option>
                         </select>
                       </td>
+
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border-0 ${getPaymentStatusColor(
+                            order.paymentStatus
+                          )}`}
+                        >
+                          {order.paymentStatus || "Awaiting Payment"}
+                        </span>
+                      </td>
+
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </td>

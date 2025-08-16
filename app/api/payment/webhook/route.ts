@@ -6,6 +6,7 @@ import { handleApiError, successResponse } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import { EmailService } from "@/lib/email-service";
 import crypto from "crypto";
+import { Webhook } from "@/lib/models/webhook";
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 
@@ -32,6 +33,7 @@ export async function POST(req: NextRequest) {
     }
 
     const event = JSON.parse(body);
+    await saveWebhook(event);
 
     // Handle different webhook events
     switch (event.event) {
@@ -58,6 +60,44 @@ export async function POST(req: NextRequest) {
   }
 }
 
+async function saveWebhook(event: any) {
+  const { data, event: ev } = event;
+  const { reference, amount, customer, metadata } = data;
+  const orderId = metadata?.order_id;
+  const userId = metadata?.user_id;
+  try {
+    await Webhook.create({
+      orderId,
+      reference,
+      amount,
+      metadata,
+      event: ev,
+      userId,
+      customer,
+      rawData: event,
+    });
+
+    logger.info("Webhook Saved", {
+      path: "/api/payment/webhook",
+      metadata: {
+        orderId,
+        userId,
+        reference,
+      },
+    });
+  } catch (error) {
+    logger.error("Failed to save webhook", {
+      path: "/api/payment/webhook",
+      error,
+      metadata: {
+        orderId,
+        userId,
+        reference,
+      },
+    });
+  }
+}
+
 async function handlePaymentSuccess(data: any) {
   try {
     const { reference, amount, customer, metadata } = data;
@@ -72,8 +112,8 @@ async function handlePaymentSuccess(data: any) {
     const order = await Order.findByIdAndUpdate(
       orderId,
       {
-        status: "processing",
-        paymentStatus: "paid",
+        status: "Processing",
+        paymentStatus: "Paid",
         paymentReference: reference,
         paymentAmount: amount / 100, // Convert from kobo to GHS
         paidAt: new Date(),

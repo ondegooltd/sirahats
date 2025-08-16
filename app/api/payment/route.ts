@@ -21,13 +21,11 @@ export async function POST(req: NextRequest) {
     const session = await requireAuth();
     if (session instanceof NextResponse) return session;
 
-    const { amount, email, reference, callback_url } = await req.json();
+    const { amount, email, reference, callback_url, order_id } =
+      await req.json();
 
     if (!amount || !email || !reference) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+      return errorResponse("Missing required fields", 400);
     }
 
     // Initialize Paystack transaction
@@ -47,6 +45,7 @@ export async function POST(req: NextRequest) {
           currency: "GHS",
           channels: ["card", "mobile_money", "bank"],
           metadata: {
+            order_id,
             user_id: session.user.id,
             custom_fields: [
               {
@@ -63,7 +62,9 @@ export async function POST(req: NextRequest) {
     if (!paystackResponse.ok) {
       const errorData = await paystackResponse.json();
       logger.error("Paystack initialization error:", errorData);
-      throw new Error("Failed to initialize payment");
+      errorResponse("Failed to initialize payment", 400, {
+        ...errorData,
+      });
     }
 
     const paystackData = await paystackResponse.json();

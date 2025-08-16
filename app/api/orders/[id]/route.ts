@@ -1,13 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import { Order } from "@/lib/models/order";
-import { handleApiError, successResponse, errorResponse } from "@/lib/api-response";
+import {
+  handleApiError,
+  successResponse,
+  errorResponse,
+} from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     await connectToDatabase();
-    const order = await Order.findById(params.id).populate("user").populate("items.product");
+    const order = await Order.findById(params.id)
+      .populate("user")
+      .populate("items.product");
     if (!order) {
       return errorResponse("Order not found", 404);
     }
@@ -21,11 +30,16 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     await connectToDatabase();
     const data = await req.json();
-    const order = await Order.findByIdAndUpdate(params.id, data, { new: true }).populate("user").populate("items.product");
+    const order = await Order.findByIdAndUpdate(params.id, data, { new: true })
+      .populate("user")
+      .populate("items.product");
     if (!order) {
       return errorResponse("Order not found", 404);
     }
@@ -39,7 +53,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     await connectToDatabase();
     const order = await Order.findByIdAndDelete(params.id);
@@ -54,4 +71,4 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     });
     return handleApiError(error);
   }
-} 
+}
