@@ -402,7 +402,7 @@ export default function OrdersPage() {
                           </div>
 
                           <div className="mt-6 space-y-2">
-                            <button className="w-full flex items-center justify-center space-x-2 bg-[#8BC34A] text-white py-2 px-4 rounded-md hover:bg-[#689F38] transition-colors">
+                            {/* <button className="w-full flex items-center justify-center space-x-2 bg-[#8BC34A] text-white py-2 px-4 rounded-md hover:bg-[#689F38] transition-colors">
                               <Eye className="w-4 h-4" />
                               <span>View Details</span>
                             </button>
@@ -410,7 +410,7 @@ export default function OrdersPage() {
                               <button className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50 transition-colors">
                                 Reorder
                               </button>
-                            )}
+                            )} */}
                           </div>
                         </div>
                       </div>
