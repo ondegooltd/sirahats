@@ -22,7 +22,7 @@ export default function Header() {
     { name: "SHOP", href: "/shop" },
     { name: "COLLECTIONS", href: "/collections" },
     { name: "ABOUT", href: "/about" },
-    { name: "STOCKISTS", href: "/stockists" },
+    // { name: "STOCKISTS", href: "/stockists" },
     { name: "WHOLESALE", href: "/wholesale" },
     // { name: "INSPIRATION", href: "/inspiration" },
   ];

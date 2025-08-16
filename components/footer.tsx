@@ -96,16 +96,16 @@ export default function Footer() {
                   Contact
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link
                   href="/stockists"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
                   Stockists
                 </Link>
-              </li>
+              </li> */}
               {/* Hidden admin link - only visible to logged-in users */}
-              {session?.user && (
+              {session?.user && session?.user.role === "admin" && (
                 <li>
                   <Link
                     href="/admin/login"

@@ -70,7 +70,8 @@ export default function AboutPage() {
                 className="relative h-96 rounded-lg overflow-hidden"
               >
                 <Image
-                  src="/placeholder.svg?height=400&width=600"
+                  src="https://res.cloudinary.com/duznylrc6/image/upload/v1755000932/Home-image_sty0rq.jpg?height=400&width=600"
+                  // src="/placeholder.svg?height=400&width=600"
                   alt="Artisan at work"
                   fill
                   className="object-cover"
