@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/components/app-provider";
 import { AppSessionProvider } from "@/components/session-provider";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,7 +38,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AppSessionProvider>
-          <AppProvider>{children}</AppProvider>
+          <AppProvider>
+            {children}
+            <Analytics />
+          </AppProvider>
         </AppSessionProvider>
       </body>
     </html>
