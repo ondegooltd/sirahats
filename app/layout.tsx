@@ -5,6 +5,7 @@ import "./globals.css";
 import { AppProvider } from "@/components/app-provider";
 import { AppSessionProvider } from "@/components/session-provider";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -41,6 +42,7 @@ export default function RootLayout({
           <AppProvider>
             {children}
             <Analytics />
+            <SpeedInsights />
           </AppProvider>
         </AppSessionProvider>
       </body>
