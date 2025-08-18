@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import {
@@ -13,13 +13,12 @@ import {
   Check,
   Loader2,
 } from "lucide-react";
-import { useCart } from "@/contexts/cart-context";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 
-interface CheckoutFormData {
+interface BuyNowFormData {
   email: string;
   firstName: string;
   lastName: string;
@@ -31,15 +30,26 @@ interface CheckoutFormData {
   phone: string;
 }
 
-export default function CheckoutPage() {
+interface Product {
+  _id: string;
+  name: string;
+  slug: string;
+  price: number;
+  description: string;
+  images: string[];
+}
+
+export default function BuyNowPage() {
   const router = useRouter();
-  const { state: cartState, dispatch: cartDispatch } = useCart();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isInitializingPayment, setIsInitializingPayment] = useState(false);
-  const [formData, setFormData] = useState<CheckoutFormData>({
+  const [product, setProduct] = useState<Product | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [formData, setFormData] = useState<BuyNowFormData>({
     email: session?.user?.email || "",
     firstName: "",
     lastName: "",
@@ -50,6 +60,9 @@ export default function CheckoutPage() {
     country: "Ghana",
     phone: "",
   });
+
+  const productId = searchParams.get("productId");
+  const productSlug = searchParams.get("slug");
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-GH", {
@@ -62,79 +75,63 @@ export default function CheckoutPage() {
     if (!session?.user) {
       toast({
         title: "Login Required",
-        description: "Please log in to proceed with checkout.",
+        description: "Please log in to proceed with purchase.",
         variant: "destructive",
       });
       router.push("/login");
       return;
     }
 
-    // Check for pending order in sessionStorage
-    const pendingOrderId = sessionStorage.getItem("pendingOrderId");
-    if (pendingOrderId) {
-      // If there's a pending order, redirect to success page
-      router.push(`/checkout/success?orderId=${pendingOrderId}`);
-      return;
-    }
-
-    // Check for buy now pending order in sessionStorage
-    const buyNowOrderId = sessionStorage.getItem("buyNowOrderId");
-    if (buyNowOrderId) {
-      // If there's a buy now pending order, redirect to success page
-      router.push(`/checkout/success?orderId=${buyNowOrderId}`);
-      return;
-    }
-
-    // Check for failed order in sessionStorage
-    const failedOrderId = sessionStorage.getItem("failedOrderId");
-    if (failedOrderId) {
-      // Clear the failed order ID and show a message
-      sessionStorage.removeItem("failedOrderId");
+    if (!productId && !productSlug) {
       toast({
-        title: "Previous Payment Failed",
-        description:
-          "Your previous payment was not successful. Please try again.",
+        title: "Product Required",
+        description: "No product selected for purchase.",
         variant: "destructive",
       });
+      router.push("/shop");
+      return;
     }
 
-    // Only check cart if we're not loading and have finished initial load
-    if (!cartState.isLoading) {
-      if (cartState.items.length === 0) {
+    // Load product details
+    const loadProduct = async () => {
+      try {
+        let url = "";
+        if (productId) {
+          url = `/api/products/${productId}`;
+        } else if (productSlug) {
+          url = `/api/products?search=${productSlug}&limit=1`;
+        }
+
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          const productData = productId ? data.data : data.data.products?.[0];
+          if (productData) {
+            setProduct(productData);
+          } else {
+            toast({
+              title: "Product Not Found",
+              description: "The selected product could not be found.",
+              variant: "destructive",
+            });
+            router.push("/shop");
+          }
+        }
+      } catch (error) {
+        console.error("Error loading product:", error);
         toast({
-          title: "Empty Cart",
-          description: "Your cart is empty. Add some items before checkout.",
+          title: "Error",
+          description: "Failed to load product details.",
           variant: "destructive",
         });
         router.push("/shop");
-        return;
       }
-    }
-  }, [
-    session?.user,
-    cartState.items.length,
-    cartState.isLoading,
-    router,
-    toast,
-  ]);
-
-  // Cleanup effect to handle page unload during payment
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Don't clear the pending order on page unload
-      // Let the success page handle it
     };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, []);
+    loadProduct();
+  }, [session?.user, productId, productSlug, router, toast]);
 
-  const subtotal = cartState.items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  const subtotal = product ? product.price * quantity : 0;
   const shipping = subtotal >= 450 ? 0 : 15;
   const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
@@ -184,15 +181,21 @@ export default function CheckoutPage() {
   };
 
   const createOrder = async () => {
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
     try {
       const orderData = {
-        items: cartState.items.map((item) => ({
-          product: item.id,
-          quantity: item.quantity,
-          price: item.price,
-          name: item.name,
-          image: item.image,
-        })),
+        items: [
+          {
+            product: product._id,
+            quantity: quantity,
+            price: product.price,
+            name: product.name,
+            image: product.images[0],
+          },
+        ],
         subtotal,
         shipping,
         tax,
@@ -234,7 +237,7 @@ export default function CheckoutPage() {
 
   const initializePayment = async (order: any) => {
     try {
-      const reference = `ORDER_${order._id}_${Date.now()}`;
+      const reference = `BUYNOW_${order._id}_${Date.now()}`;
 
       const response = await fetch("/api/payment", {
         method: "POST",
@@ -283,7 +286,7 @@ export default function CheckoutPage() {
       const paymentData = await initializePayment(order);
 
       // Store order ID in sessionStorage for payment success handling
-      sessionStorage.setItem("pendingOrderId", order._id);
+      sessionStorage.setItem("buyNowOrderId", order._id);
 
       // Redirect to Paystack payment page
       window.location.href = paymentData.authorization_url;
@@ -301,31 +304,8 @@ export default function CheckoutPage() {
     }
   };
 
-  if (
-    !session?.user ||
-    (cartState.items.length === 0 && !cartState.isLoading)
-  ) {
+  if (!session?.user || !product) {
     return null;
-  }
-
-  // Show loading state while cart is being loaded
-  if (cartState.isLoading) {
-    return (
-      <>
-        <Header />
-        <div className="min-h-screen bg-gray-50 py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <Loader2 className="w-8 h-8 animate-spin text-[#8BC34A] mx-auto mb-4" />
-                <p className="text-gray-600">Loading your cart...</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
   }
 
   return (
@@ -342,7 +322,7 @@ export default function CheckoutPage() {
               <ArrowLeft size={20} />
               <span>Back</span>
             </button>
-            <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Buy Now</h1>
             <div className="w-16" />
           </div>
 
@@ -620,34 +600,55 @@ export default function CheckoutPage() {
                   Order Summary
                 </h2>
 
-                {/* Cart Items */}
-                <div className="space-y-4 mb-6">
-                  {cartState.items.map((item) => (
-                    <div
-                      key={`${item.id}-${item.slug}`}
-                      className="flex items-center space-x-3"
-                    >
+                {/* Product Details */}
+                {product && (
+                  <div className="space-y-4 mb-6">
+                    <div className="flex items-center space-x-3">
                       <div className="relative w-16 h-16 rounded-md overflow-hidden">
                         <Image
-                          src={item.image || "/placeholder.svg"}
-                          alt={item.name}
+                          src={product.images[0] || "/placeholder.svg"}
+                          alt={product.name}
                           fill
                           className="object-cover"
                         />
                       </div>
                       <div className="flex-1">
                         <h3 className="font-medium text-gray-900 text-sm">
-                          {item.name}
+                          {product.name}
                         </h3>
-                        <p className="text-sm text-gray-600">
-                          Qty: {item.quantity}
-                        </p>
+                        <p className="text-sm text-gray-600">Qty: {quantity}</p>
                       </div>
                       <p className="font-medium text-gray-900">
-                        {formatCurrency(item.price * item.quantity)}
+                        {formatCurrency(product.price * quantity)}
                       </p>
                     </div>
-                  ))}
+                  </div>
+                )}
+
+                {/* Quantity Selector */}
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Quantity
+                  </label>
+                  <div className="flex items-center border border-gray-300 rounded-md w-fit">
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="px-3 py-2 hover:bg-gray-100 transition-colors"
+                      title="Decrease quantity"
+                    >
+                      -
+                    </button>
+                    <span className="px-4 py-2 border-x border-gray-300">
+                      {quantity}
+                    </span>
+                    <button
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="px-3 py-2 hover:bg-gray-100 transition-colors"
+                      title="Increase quantity"
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
 
                 {/* Order Totals */}

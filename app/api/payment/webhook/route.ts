@@ -40,6 +40,9 @@ export async function POST(req: NextRequest) {
       case "charge.success":
         await handlePaymentSuccess(event.data);
         break;
+      case "charge.failed":
+        await handlePaymentFailed(event.data);
+        break;
       case "transfer.success":
         await handleTransferSuccess(event.data);
         break;
@@ -161,6 +164,41 @@ async function handlePaymentSuccess(data: any) {
 
 async function handleTransferSuccess(data: any) {
   logger.info("Transfer successful:", data);
+}
+
+async function handlePaymentFailed(data: any) {
+  try {
+    const { reference, metadata } = data;
+    const orderId = metadata?.order_id;
+
+    if (!orderId) {
+      logger.error("No order ID in payment metadata");
+      return;
+    }
+
+    // Update order status to failed
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      {
+        status: "Cancelled",
+        paymentStatus: "Failed",
+        paymentReference: reference,
+      },
+      { new: true }
+    );
+
+    if (!order) {
+      logger.error(`Order not found: ${orderId}`);
+      return;
+    }
+
+    logger.info(`Payment failed for order: ${orderId}`);
+  } catch (error) {
+    logger.error("Error handling payment failure:", {
+      path: "/api/payment/webhook",
+      error,
+    });
+  }
 }
 
 async function handleTransferFailed(data: any) {

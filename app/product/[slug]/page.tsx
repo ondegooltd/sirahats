@@ -208,36 +208,8 @@ export default function ProductPage({ params }: ProductPageProps) {
       return;
     }
 
-    try {
-      // Add to cart using context
-      await addToCart(
-        {
-          id: product._id,
-          name: product.name,
-          price: product.price,
-          image: product.images[0],
-          slug: product.slug,
-        },
-        quantity
-      );
-
-      // Show success message
-      toast({
-        title: "Added to Cart",
-        description: `${product.name} has been added to your cart.`,
-        variant: "success",
-      });
-
-      // Navigate to checkout
-      router.push("/checkout");
-    } catch (error) {
-      console.error("Error with buy now:", error);
-      toast({
-        title: "Error",
-        description: "Failed to process purchase",
-        variant: "destructive",
-      });
-    }
+    // Navigate to buy now page with product information
+    router.push(`/buy-now?productId=${product._id}&slug=${product.slug}`);
   };
 
   if (isLoading) {

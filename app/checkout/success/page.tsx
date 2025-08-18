@@ -14,6 +14,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useCart } from "@/contexts/cart-context";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 
@@ -21,6 +22,7 @@ export default function CheckoutSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { dispatch: cartDispatch } = useCart();
   const [order, setOrder] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [paymentStatus, setPaymentStatus] = useState<string>("pending");
@@ -70,11 +72,40 @@ export default function CheckoutSuccessPage() {
             setPaymentStatus(paymentData.data.status);
 
             if (paymentData.data.status === "success") {
+              // Clear the cart when payment is successful (only for regular checkout)
+              const pendingOrderId = sessionStorage.getItem("pendingOrderId");
+              if (pendingOrderId === orderId) {
+                cartDispatch({ type: "CLEAR_CART" });
+                sessionStorage.removeItem("pendingOrderId");
+              }
+
+              // Clear buy now order ID if it exists
+              const buyNowOrderId = sessionStorage.getItem("buyNowOrderId");
+              if (buyNowOrderId === orderId) {
+                sessionStorage.removeItem("buyNowOrderId");
+              }
+
               toast({
                 title: "Payment Successful!",
                 description: "Your payment has been processed successfully.",
                 variant: "success",
               });
+            } else if (
+              paymentData.data.status === "failed" ||
+              paymentData.data.status === "cancelled"
+            ) {
+              // Handle failed or cancelled payment
+              toast({
+                title: "Payment Failed",
+                description:
+                  "Your payment was not successful. Please try again.",
+                variant: "destructive",
+              });
+
+              // Clear the pending order ID and store failed order ID
+              sessionStorage.removeItem("pendingOrderId");
+              sessionStorage.removeItem("buyNowOrderId");
+              sessionStorage.setItem("failedOrderId", orderId || "");
             } else {
               toast({
                 title: "Payment Pending",
@@ -98,7 +129,26 @@ export default function CheckoutSuccessPage() {
     };
 
     fetchOrderAndVerifyPayment();
-  }, [orderId, reference, trxref, router, toast]);
+
+    // Set a timeout to clear pending order after 30 minutes
+    const timeoutId = setTimeout(() => {
+      const pendingOrderId = sessionStorage.getItem("pendingOrderId");
+      const buyNowOrderId = sessionStorage.getItem("buyNowOrderId");
+
+      if (pendingOrderId === orderId || buyNowOrderId === orderId) {
+        sessionStorage.removeItem("pendingOrderId");
+        sessionStorage.removeItem("buyNowOrderId");
+        sessionStorage.setItem("failedOrderId", orderId);
+        toast({
+          title: "Payment Timeout",
+          description: "Payment verification timed out. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }, 30 * 60 * 1000); // 30 minutes
+
+    return () => clearTimeout(timeoutId);
+  }, [orderId, reference, trxref, router, toast, cartDispatch]);
 
   if (isLoading) {
     return (

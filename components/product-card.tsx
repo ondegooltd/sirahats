@@ -5,10 +5,11 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ShoppingBag, Heart, Eye } from "lucide-react";
+import { ShoppingBag, Heart, Eye, CreditCard } from "lucide-react";
 import { useCart } from "@/contexts/cart-context";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 import { Product } from "@/lib/types";
 
 interface ProductCardProps {
@@ -21,6 +22,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
   const { dispatch } = useCart();
   const { data: session } = useSession();
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -130,6 +132,32 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
     }
   };
 
+  const handleBuyNow = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!session?.user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to purchase items.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!product.inStock) {
+      toast({
+        title: "Out of Stock",
+        description: "This product is currently out of stock.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Navigate to buy now page
+    router.push(`/buy-now?productId=${product._id}&slug=${product.slug}`);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -176,6 +204,14 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
             <ShoppingBag size={16} />
           </button>
           <button
+            onClick={handleBuyNow}
+            disabled={!product.inStock}
+            className="bg-white text-gray-900 p-2 rounded-full hover:bg-gray-900 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Buy Now"
+          >
+            <CreditCard size={16} />
+          </button>
+          <button
             onClick={handleAddToWishlist}
             className="bg-white text-gray-900 p-2 rounded-full hover:bg-red-500 hover:text-white transition-colors"
             title="Add to Wishlist"
@@ -199,7 +235,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           </h3>
         </Link>
         <p className="text-xs text-gray-600 mb-2">{product.category}</p>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-2">
           <p className="font-semibold text-gray-900 text-sm">
             ₵{product.price.toFixed(2)}
           </p>
@@ -211,6 +247,15 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
             </span>
           )}
         </div>
+
+        {/* Mobile Buy Now Button */}
+        <button
+          onClick={handleBuyNow}
+          disabled={!product.inStock}
+          className="w-full bg-gray-900 text-white py-2 px-3 rounded-md text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Buy Now
+        </button>
       </div>
     </motion.div>
   );
