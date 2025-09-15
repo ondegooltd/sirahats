@@ -47,9 +47,11 @@ export default function ShippingPage() {
                     </h3>
                   </div>
                   <p className="text-gray-600 mb-3">5-7 business days</p>
-                  <p className="text-lg font-semibold text-gray-900">₵20.00</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    Calculated at checkout
+                  </p>
                   <p className="text-sm text-gray-500 mt-2">
-                    Free on orders over ₵450
+                    Free shipping available on qualifying orders
                   </p>
                 </div>
 
@@ -61,7 +63,9 @@ export default function ShippingPage() {
                     </h3>
                   </div>
                   <p className="text-gray-600 mb-3">2-3 business days</p>
-                  <p className="text-lg font-semibold text-gray-900">₵50.00</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    Calculated at checkout
+                  </p>
                   <p className="text-sm text-gray-500 mt-2">
                     Available for most locations
                   </p>
@@ -85,26 +89,33 @@ export default function ShippingPage() {
 
               <p className="text-gray-600 mb-6">
                 We ship worldwide! International shipping rates and delivery
-                times vary by destination.
+                times vary by destination. Pricing is calculated at checkout
+                based on your location and order details.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">Canada</h3>
                   <p className="text-gray-600">7-10 business days</p>
-                  <p className="font-semibold">Starting at $20</p>
+                  <p className="font-semibold text-gray-900">
+                    Calculated at checkout
+                  </p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">Europe</h3>
                   <p className="text-gray-600">10-14 business days</p>
-                  <p className="font-semibold">Starting at $35</p>
+                  <p className="font-semibold text-gray-900">
+                    Calculated at checkout
+                  </p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-2">
                     Rest of World
                   </h3>
                   <p className="text-gray-600">14-21 business days</p>
-                  <p className="font-semibold">Starting at $45</p>
+                  <p className="font-semibold text-gray-900">
+                    Calculated at checkout
+                  </p>
                 </div>
               </div>
             </motion.section>

@@ -686,7 +686,8 @@ export default function BuyNowPage() {
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <Truck size={16} />
                     <span>
-                      Free shipping on orders over {formatCurrency(450)}
+                      Free shipping on orders over {formatCurrency(1700)} (Ghana
+                      only)
                     </span>
                   </div>
                 </div>

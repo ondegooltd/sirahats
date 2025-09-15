@@ -300,7 +300,8 @@ export default function HomePage() {
                 {
                   icon: Truck,
                   title: "Free Shipping",
-                  description: "Free shipping on orders over $75",
+                  description:
+                    "Free shipping on orders over ¢1700 (Ghana only).",
                 },
                 {
                   icon: Shield,

@@ -126,7 +126,7 @@ export default function WholesalePage() {
                   icon: Truck,
                   title: "Reliable Shipping",
                   description:
-                    "Fast, secure shipping with tracking and insurance. Free shipping on orders over $500.",
+                    "Fast, secure shipping with tracking and insurance. Free shipping on orders over ¢1700 (Ghana only).",
                 },
                 {
                   icon: Users,
@@ -415,10 +415,10 @@ export default function WholesalePage() {
                 Email Wholesale Team
               </a>
               <a
-                href="tel:+15551234567"
+                href="tel:+233508617510"
                 className="inline-block border border-[#8BC34A] text-[#8BC34A] px-6 py-2 rounded-md font-medium hover:bg-[#8BC34A] hover:text-white transition-colors"
               >
-                Call (030) 123-4567
+                Call 0508617510
               </a>
             </div>
           </motion.div>
