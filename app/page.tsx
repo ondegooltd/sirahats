@@ -377,6 +377,52 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Video Section */}
+        <section className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                See Our Artisans at Work
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Watch the skilled craftsmanship and traditional techniques that
+                go into creating our beautiful products
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="relative max-w-4xl mx-auto"
+            >
+              <div className="relative aspect-video rounded-lg overflow-hidden shadow-lg">
+                <video
+                  className="w-full h-full object-cover"
+                  controls
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                >
+                  <source
+                    src="https://res.cloudinary.com/duznylrc6/video/upload/v1758031451/WhatsApp_Video_2025-09-16_at_13.08.06_1_o3hhut.mp4"
+                    type="video/mp4"
+                  />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
         {/* Featured Products */}
         <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
