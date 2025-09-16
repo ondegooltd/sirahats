@@ -90,7 +90,7 @@ export default function HomePage() {
       try {
         // Load featured products (first 8 products)
         const productsRes = await fetch(
-          "/api/products?limit=8&sortBy=createdAt&sortOrder=desc"
+          "/api/products?limit=4&sortBy=createdAt&sortOrder=desc"
         );
         const productsData = await productsRes.json();
 
@@ -254,18 +254,18 @@ export default function HomePage() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.4 }}
-                  className="space-x-4"
+                  className="space-x-2 md:space-x-4"
                 >
                   <Link
                     href={carouselSlides[currentSlide].primaryButton.href}
-                    className="inline-flex m-3 items-center bg-[#8BC34A] text-white px-8 py-4 rounded-md md:text-lg font-medium hover:bg-[#689F38] transition-colors"
+                    className="inline-flex m-3 items-center bg-[#8BC34A] text-white px-4 py-2 md:px-8 md:py-4 rounded-md text-sm md:text-lg font-medium hover:bg-[#689F38] transition-colors"
                   >
                     {carouselSlides[currentSlide].primaryButton.text}
-                    <ArrowRight className="ml-2 w-5 h-5" />
+                    <ArrowRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
                   </Link>
                   <Link
                     href={carouselSlides[currentSlide].secondaryButton.href}
-                    className="inline-flex items-center border-2 border-white text-white px-8 py-4 rounded-md md:text-lg font-medium hover:bg-white hover:text-gray-900 transition-colors"
+                    className="inline-flex items-center border-2 border-white text-white px-4 py-2 md:px-8 md:py-4 rounded-md text-sm md:text-lg font-medium hover:bg-white hover:text-gray-900 transition-colors"
                   >
                     {carouselSlides[currentSlide].secondaryButton.text}
                   </Link>
@@ -276,26 +276,26 @@ export default function HomePage() {
             {/* Navigation Arrows */}
             <button
               onClick={prevSlide}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-3 rounded-full transition-all duration-300"
+              className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 md:p-3 rounded-full transition-all duration-300"
               aria-label="Previous slide"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-4 h-4 md:w-6 md:h-6" />
             </button>
             <button
               onClick={nextSlide}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-3 rounded-full transition-all duration-300"
+              className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 z-20 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 md:p-3 rounded-full transition-all duration-300"
               aria-label="Next slide"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-4 h-4 md:w-6 md:h-6" />
             </button>
 
             {/* Slide Indicators */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex space-x-2">
+            <div className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex space-x-1 md:space-x-2">
               {carouselSlides.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all duration-300 ${
                     index === currentSlide
                       ? "bg-white"
                       : "bg-white bg-opacity-50 hover:bg-opacity-75"
@@ -327,20 +327,20 @@ export default function HomePage() {
               </div>
 
               {/* Navigation Arrows */}
-              <div className="flex space-x-2">
+              <div className="flex space-x-1 md:space-x-2">
                 <button
                   onClick={scrollLeft}
-                  className="p-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                  className="p-2 md:p-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
                   aria-label="Scroll left"
                 >
-                  <ChevronLeft className="w-5 h-5 text-gray-600" />
+                  <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
                 </button>
                 <button
                   onClick={scrollRight}
-                  className="p-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                  className="p-2 md:p-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
                   aria-label="Scroll right"
                 >
-                  <ChevronRight className="w-5 h-5 text-gray-600" />
+                  <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
                 </button>
               </div>
             </motion.div>
