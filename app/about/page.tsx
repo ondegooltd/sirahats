@@ -293,7 +293,7 @@ export default function AboutPage() {
         </section>
 
         {/* Meet Our Team */}
-        {/* <section className="py-16 bg-gray-50">
+        <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -312,35 +312,62 @@ export default function AboutPage() {
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[1, 2, 3].map((i) => (
+              {[
+                {
+                  name: "Avea Avebire Asira-soh",
+                  image:
+                    "https://res.cloudinary.com/duznylrc6/image/upload/v1758148189/Avea_Avebire_Asira-soh-Founder_ket6wi.jpg",
+                  title: "Founder",
+                  description: "",
+                },
+                {
+                  name: "Abaane Elijah Abaane",
+                  image:
+                    "https://res.cloudinary.com/duznylrc6/image/upload/v1758148182/Abaane_Elijah_Abaane_Shipping_Sourcing_Department_z9nw66.jpg",
+                  title: "Shipping & Sourcing",
+                  description: "",
+                },
+                {
+                  name: "Elisha Adeliwine Awuni",
+                  image:
+                    "https://res.cloudinary.com/duznylrc6/image/upload/v1758147867/Passport_Pic_Elisha_xpttvv.jpg",
+                  title: "Web Developer",
+                  description: "",
+                },
+              ].map((i, idx) => (
                 <motion.div
-                  key={i}
+                  key={i.name}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: i * 0.1 }}
-                  className="text-center bg-white p-6 rounded-lg shadow-md"
+                  transition={{ duration: 0.6, delay: idx * 0.1 }}
+                  className="text-center bg-white rounded-lg shadow-md overflow-hidden"
                 >
-                  <div className="relative w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden">
+                  <div className="relative w-full aspect-[3/4] mb-4">
                     <Image
-                      src={`/placeholder.svg?height=128&width=128`}
-                      alt={`Team Member ${i}`}
+                      src={i.image}
+                      alt={`Team Member ${i.name}`}
                       fill
                       className="object-cover"
                     />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    Team Member Name
-                  </h3>
-                  <p className="text-gray-600 mb-2">Artisan from Ghana</p>
-                  <p className="text-sm text-gray-500">
-                    "Crafting is not just my skill, it's my heritage and my gift
-                    to the world."
-                  </p>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                      {i.name}
+                    </h3>
+                    <p className="text-[#8BC34A] font-medium text-sm uppercase tracking-wide mb-3">
+                      {i.title}
+                    </p>
+                    {i.description && (
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        {i.description}
+                      </p>
+                    )}
+                  </div>
                 </motion.div>
               ))}
             </div>
           </div>
-        </section> */}
+        </section>
       </div>
       <Footer />
     </>
