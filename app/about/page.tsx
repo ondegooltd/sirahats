@@ -328,7 +328,7 @@ export default function AboutPage() {
                   description: "",
                 },
                 {
-                  name: "Elisha Adeliwine Awuni",
+                  name: "Elisha Adelwin Awuni",
                   image:
                     "https://res.cloudinary.com/duznylrc6/image/upload/v1758147867/Passport_Pic_Elisha_xpttvv.jpg",
                   title: "Web Developer",
