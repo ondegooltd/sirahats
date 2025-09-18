@@ -27,6 +27,17 @@ export const metadata: Metadata = {
     "home decor",
     "handcraft",
     "tray",
+    "shea butter",
+    "leather products",
+    "straw products",
+    "ghanaian products",
+    "ghanaian craftsmanship",
+    "ghanaian art",
+    "ghanaian culture",
+    "ghanaian traditional",
+    "ghanaian traditional culture",
+    "ghanaian traditional craftsmanship",
+    "ghanaian traditional art",
   ],
 };
 
